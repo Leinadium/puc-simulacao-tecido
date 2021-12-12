@@ -62,13 +62,16 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
     for i in range(len(pontos) - 1):
         p1 = pontos[i]
         p2 = pontos[i + 1]
-        barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
+        dist = calcula_dist(p1.get_current_pos(), p2.get_current_pos())
+        barra_perto = Bar(p1, p2, dist)
         barras.insert(0, barra_perto)
         # max_lim = len(pontos)
-        max_lim = min(len(pontos), i + 4)
+        max_lim = min(len(pontos), i + 8)
         for j in range(i + 2, max_lim):
             paux = pontos[j]
-            aux_bar = Bar(p1, paux, calcula_dist(p1.get_current_pos(), paux.get_current_pos()))
+            aux_dist = calcula_dist(p1.get_current_pos(), paux.get_current_pos())
+            print(aux_dist)
+            aux_bar = Bar(p1, paux, aux_dist)
             barras.append(aux_bar)
     last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
     ultima_barra = Bar(pontos[-2], pontos[-1], last_dist)
