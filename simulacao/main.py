@@ -3,7 +3,7 @@ from sim import CordaSimul
 
 
 def main_teste():
-    tam_corda = 5
+    tam_corda = 4
     delta = 0.02
     dist_minima = 0.1
     m = [0.2 for i in range(int(tam_corda / dist_minima))]
