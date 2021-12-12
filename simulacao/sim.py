@@ -69,7 +69,7 @@ def _gera_pontos_iniciais2(dist_minima: float, tam_corda: float, h: float) -> tu
 
     # Criando partículas
     for i in range(int(tam_corda / dist_minima)):
-        previous_pos = np.array([0 + 0.1 * i, tam_corda - dist_minima * i])
+        previous_pos = np.array([0 + 0.1 * i, tam_corda - dist_minima * i+10])
         particles.append(Particle(previous_pos, previous_pos))
     particles[0].is_fixed = True
 
