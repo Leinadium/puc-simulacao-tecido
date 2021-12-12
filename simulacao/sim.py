@@ -129,7 +129,6 @@ class CordaSimul:
                  h: float = None,
                  dist_minima: float = None,
                  pontos: List[Particle] = None,
-                 barras: List[Bar] = None,
                  n_adjacencias_por_particula=7
                  ):
         """
@@ -156,7 +155,7 @@ class CordaSimul:
             self.pontos, self.barras = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m, self.n_adjacencias)
         elif pontos is not None and barras is not None:
             self.pontos = pontos
-            self.barras = barras
+            self.barras = gera_barras(self.pontos, n_adjacencias_por_particula)
             self.dist_minima = None
         else:
             print("especifique dist_minima ou pontos")

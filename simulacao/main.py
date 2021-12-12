@@ -21,7 +21,7 @@ def main_teste():
         m=m,
         h=h,
         dist_minima=dist_minima,
-        n_adjacencias_por_particula=6
+        n_adjacencias_por_particula=7
     )
 
     while True:
