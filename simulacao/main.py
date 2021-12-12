@@ -4,7 +4,7 @@ from sim import CordaSimul
 def main_teste():
 
     delta = 0.02
-    m = 0.2
+    m = 1.2
     h = 0.05
 
 
