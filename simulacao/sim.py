@@ -1,7 +1,7 @@
 from typing import List
 import numpy as np
 
-DEFAULT_FPS = 1.0 / 60
+DEFAULT_FPS = 1.0 / 60.0
 
 
 # Gera uma instância de partícula. Guarda a posição anterior da partícula, posição atual e um booleano indicando
@@ -25,19 +25,72 @@ class Particle:
         return self.current_pos
 
 
+# class Bar:
+#     particle1 = Particle(0, 0)
+#     particle2 = Particle(1, 1)
+#     length = 0
+#
+#     def __init__(self, particle1, particle2, length):
+#         self.particle1 = particle1
+#         self.particle2 = particle2
+#         self.length = length
+#
+#     def relax(self, particle1, particle2):
+#         pass
+
+# def gera_barras(self):
+#     barras = []
+#     for i in range(len(self.pontos) - 2):
+#         dist_perto = 1
+#         dist_longe = 2
+#         barra_perto = Bar(self.pontos[i], self.pontos[i + 1], dist_perto)
+#         barra_longe = Bar(self.pontos[i], self.pontos[i + 2], dist_longe)
+#         barras.append(barra_perto)
+#         barras.append(barra_longe)
+#     ultima_barra = Bar(self.pontos[-2], self.pontos[-1], 1)
+#     barras.append(ultima_barra)
+#     return barras
+
 def _gera_pontos_iniciais(dist_minima: float, tam_corda: float) -> List[List[float]]:
     return [[0, tam_corda - dist_minima * i] for i in range(int(tam_corda / dist_minima))]
 
 
 def _gera_pontos_iniciais2(dist_minima: float, tam_corda: float) -> List[Particle]:
     v0 = np.array([0.5, 0.5])
-    particles = []
-    # TODO: mark one of the particles as fixed
+    particles: [Particle] = []
     for i in range(int(tam_corda / dist_minima)):
         previous_pos = np.array([0, tam_corda - dist_minima * i])
         current_pos = previous_pos + v0
         particles.append(Particle(previous_pos, current_pos))
+    particles[0].is_fixed = True
+    for p in particles:
+        print(p.get_current_pos())
     return particles
+
+
+def calcula_dist(point1, point2):
+    return np.linalg.norm(point1 - point2)
+
+
+def relax(point1: Particle, point2: Particle, close_flag):
+    # close indica se é uma barra entre dois pontos a 1 barra de distancia (True) ou
+    # se é uma barra "tracejada" (2 pontos de distância, valor de close = False)
+    if close_flag:
+        length = 1
+    else:
+        length = 2
+    direction = np.subtract(point1.current_pos, point2.current_pos)
+    distance = np.linalg.norm(direction)
+    adjust = length - distance
+    direction /= distance
+
+    if not point1.is_fixed and not point2.is_fixed:
+        point1.current_pos += (adjust/2) * direction
+        point2.current_pos += (adjust/2) * (-direction)
+    elif point1.is_fixed:
+        point2.current_pos += adjust * direction
+    elif point2.is_fixed:
+        point1.current_pos += adjust * (-direction)
 
 
 class CordaSimul:
@@ -88,6 +141,15 @@ class CordaSimul:
             current_pos = p.current_pos
             next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / m) * fg
             p.update_position(next_pos)
+
+        for i in range(len(self.pontos) - 2):
+            first = self.pontos[i]
+            second = self.pontos[i + 1]
+            third = self.pontos[i + 2]
+
+            relax(first, second, True)
+            relax(first, third, False)
+        relax(self.pontos[-2], self.pontos[-1], True)
         return
 
     def get_pontos(self):
