@@ -57,7 +57,9 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
         p2 = pontos[i + 1]
         barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
         barras.insert(0, barra_perto)
-        for j in range(i+2, len(pontos)):
+        #max_lim = len(pontos)
+        max_lim = min(len(pontos), i+4)
+        for j in range(i+2, max_lim):
             paux = pontos[j]
             aux_bar = Bar(p1, paux, calcula_dist(p1.get_current_pos(), paux.get_current_pos()))
             barras.append(aux_bar)
@@ -113,7 +115,7 @@ class CordaSimul:
                  dist_minima: float = None,
                  pontos: List[Particle] = None,
                  barras: List[Bar] = None,
-                 n_relaxacoes=500
+                 n_relaxacoes= 1000000
                  ):
         """
         Inicia um objeto de simulacao
@@ -144,7 +146,7 @@ class CordaSimul:
             print("especifique dist_minima ou pontos")
             exit(0)
         print("LEN PONTOS:", len(self.pontos))
-        print("LEN BARRAS RAPAZ:", len(self.barras))
+        print("LEN BARRAS:", len(self.barras))
         self.n_relaxacoes = n_relaxacoes
         return
 
