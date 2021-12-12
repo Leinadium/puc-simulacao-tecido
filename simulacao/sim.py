@@ -10,11 +10,13 @@ DEFAULT_FPS = 1.0 / 60.0
 class Particle:
     previous_pos = np.array([])
     current_pos = np.array([])
+    mass = 0
     is_fixed = False
 
-    def __init__(self, previous_pos, current_pos, is_fixed=False):
+    def __init__(self, previous_pos, current_pos, mass, is_fixed=False):
         self.previous_pos = previous_pos
         self.current_pos = current_pos
+        self.mass = mass
         self.is_fixed = is_fixed
 
     def update_position(self, new_position):
@@ -50,21 +52,22 @@ class Bar:
 
 def gera_barras(pontos: [Particle]) -> [Bar]:
     barras = []
-    for i in range(len(pontos) - 2):
+    for i in range(len(pontos)-1):
         p1 = pontos[i]
         p2 = pontos[i + 1]
-        p3 = pontos[i + 2]
         barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
-        barra_longe = Bar(p1, p3, calcula_dist(p1.get_current_pos(), p3.get_current_pos()))
         barras.insert(0, barra_perto)
-        barras.append(barra_longe)
+        for j in range(i+2, len(pontos)):
+            paux = pontos[j]
+            aux_bar = Bar(p1, paux, calcula_dist(p1.get_current_pos(), paux.get_current_pos()))
+            barras.append(aux_bar)
     last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
     ultima_barra = Bar(pontos[-2], pontos[-1], last_dist)
     barras.append(ultima_barra)
     return barras
 
 
-def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) \
+def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [float]) \
         -> tuple[list[Particle], list[Bar], list[float]]:
     particles: [Particle] = []
     distances: [float] = []
@@ -74,7 +77,7 @@ def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) \
     # Criando partículas
     for i in range(int(tam_corda / dist_minima)):
         previous_pos = np.array([dist_minima * i, 10 + tam_corda - dist_minima * i])
-        particles.append(Particle(previous_pos, previous_pos))
+        particles.append(Particle(previous_pos, previous_pos, m[i]))
     particles[0].is_fixed = True
 
     # Gerando barras
@@ -105,12 +108,12 @@ class CordaSimul:
                  tempo_passo: float = DEFAULT_FPS,
                  vento: float = None,
                  delta: float = None,
-                 m: float = None,
+                 m: [float] = None,
                  h: float = None,
                  dist_minima: float = None,
                  pontos: List[Particle] = None,
                  barras: List[Bar] = None,
-                 n_relaxacoes=37
+                 n_relaxacoes=500
                  ):
         """
         Inicia um objeto de simulacao
@@ -132,7 +135,7 @@ class CordaSimul:
         self.h = h
         if dist_minima is not None:
             self.dist_minima = dist_minima
-            self.pontos, self.barras, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h)
+            self.pontos, self.barras, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m)
         elif pontos is not None and barras is not None:
             self.pontos = pontos
             self.barras = barras
@@ -140,6 +143,8 @@ class CordaSimul:
         else:
             print("especifique dist_minima ou pontos")
             exit(0)
+        print("LEN PONTOS:", len(self.pontos))
+        print("LEN BARRAS RAPAZ:", len(self.barras))
         self.n_relaxacoes = n_relaxacoes
         return
 
@@ -154,12 +159,11 @@ class CordaSimul:
                 continue
             previous_pos = p.previous_pos
             current_pos = p.current_pos
-            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / m) * fg
+            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / m[i]) * fg
             p.update_position(next_pos)
 
         for i in range(len(self.barras)):
-            if count >= self.n_relaxacoes - 1:
-                print("max de relaxações atingido")
+            if count >= self.n_relaxacoes:
                 break
             self.barras[i].relax()
             count += 1
@@ -172,6 +176,6 @@ class CordaSimul:
         converted_pontos = []
         for point in self.pontos:
             converted_position = point.get_current_pos().tolist()
-            print(converted_position)
+            #print(converted_position)
             converted_pontos.append(converted_position)
         return converted_pontos
