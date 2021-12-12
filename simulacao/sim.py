@@ -25,95 +25,78 @@ class Particle:
         return self.current_pos
 
 
-# class Bar:
-#     def __init__(self, particle1: Particle, particle2: Particle, length: float):
-#         self.particle1 = particle1
-#         self.particle2 = particle2
-#         self.length = length
-#
-#     def relax(self):
-#         p1 = self.particle1
-#         p2 = self.particle2
-#         direction = np.subtract(p1.get_current_pos(), p2.get_current_pos())
-#         distance = np.linalg.norm(direction)
-#         adjust = self.length - distance
-#         direction /= distance
-#
-#         if not p1.is_fixed and not p2.is_fixed:
-#             p1.current_pos += (adjust / 2) * direction
-#             p2.current_pos += (adjust / 2) * (-direction)
-#         elif not p1.is_fixed:
-#             p1.current_pos += adjust * direction
-#         elif not p2.is_fixed:
-#             p2.current_pos += adjust * (-direction)
-#
-#
-# def gera_barras(pontos: [Particle]) -> [Bar]:
-#     barras = []
-#     for i in range(len(pontos) - 2):
-#         p1 = pontos[i]
-#         p2 = pontos[i+1]
-#         p3 = pontos[i+2]
-#         barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
-#         barra_longe = Bar(p1, p3, calcula_dist(p1.get_current_pos(), p3.get_current_pos()))
-#         barras.append(barra_perto)
-#         barras.append(barra_longe)
-#     last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
-#     ultima_barra = Bar(pontos[-2], pontos[-1], last_dist)
-#     barras.append(ultima_barra)
-#     return barras
+class Bar:
+    def __init__(self, particle1: Particle, particle2: Particle, length: float):
+        self.particle1 = particle1
+        self.particle2 = particle2
+        self.length = length
+
+    def relax(self):
+        p1 = self.particle1
+        p2 = self.particle2
+        direction = np.subtract(p1.get_current_pos(), p2.get_current_pos())
+        distance = np.linalg.norm(direction)
+        adjust = self.length - distance
+        direction /= distance
+
+        if not p1.is_fixed and not p2.is_fixed:
+            p1.current_pos += (adjust / 2) * direction
+            p2.current_pos += (adjust / 2) * (-direction)
+        elif not p1.is_fixed:
+            p1.current_pos += adjust * direction
+        elif not p2.is_fixed:
+            p2.current_pos += adjust * (-direction)
 
 
-def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) -> tuple[list[Particle], list[float]]:
+def gera_barras(pontos: [Particle]) -> [Bar]:
+    barras = []
+    for i in range(len(pontos) - 2):
+        p1 = pontos[i]
+        p2 = pontos[i + 1]
+        p3 = pontos[i + 2]
+        barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
+        barra_longe = Bar(p1, p3, calcula_dist(p1.get_current_pos(), p3.get_current_pos()))
+        barras.insert(0, barra_perto)
+        barras.append(barra_longe)
+    last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
+    ultima_barra = Bar(pontos[-2], pontos[-1], last_dist)
+    barras.append(ultima_barra)
+    return barras
+
+
+def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) \
+        -> tuple[list[Particle], list[Bar], list[float]]:
     particles: [Particle] = []
     distances: [float] = []
+    barras: [Bar] = []
     v0 = np.array([0, 0])
 
     # Criando partículas
     for i in range(int(tam_corda / dist_minima)):
-        previous_pos = np.array([dist_minima*i, 10+tam_corda - dist_minima * i])
+        previous_pos = np.array([dist_minima * i, 10 + tam_corda - dist_minima * i])
         particles.append(Particle(previous_pos, previous_pos))
     particles[0].is_fixed = True
 
-    # Salvando distâncias iniciais entre partículas
+    # Gerando barras
     # e dando passo inicial
+    barras = gera_barras(particles)
     for i in range(len(particles) - 1):
-        distances.append(calcula_dist(particles[i].get_current_pos(), particles[i + 1].get_current_pos()))
         if not particles[i].is_fixed:
             current_pos = particles[i].previous_pos + h * v0
             particles[i].update_position(current_pos)
-
     # Dando passo inicial na última partícula
     current_pos = particles[-1].previous_pos + h * v0
     particles[-1].update_position(current_pos)
 
-    # Fazendo relaxamento inicial
-    for i in range(len(particles) - 2):
-        relax(particles[i], particles[i + 1], distances[i])
-        relax(particles[i], particles[i + 2], distances[i] + distances[i + 1])
+    for i in range(len(barras)):
+        barras[i].relax()
 
-    return particles, distances
+    return particles, barras, distances
 
 
 def calcula_dist(point1, point2):
     diff = np.subtract(point1, point2)
     return np.linalg.norm(diff)
-
-
-def relax(point1: Particle, point2: Particle, og_length: float):
-    direction = np.subtract(point1.get_current_pos(), point2.get_current_pos())
-    distance = np.linalg.norm(direction)
-    adjust = og_length - distance
-    direction /= distance
-
-    if not point1.is_fixed and not point2.is_fixed:
-        point1.current_pos += (adjust / 2) * direction
-        point2.current_pos += (adjust / 2) * (-direction)
-    elif not point1.is_fixed:
-        point1.current_pos += adjust * direction
-    elif not point2.is_fixed:
-        point2.current_pos += adjust * (-direction)
-
 
 
 class CordaSimul:
@@ -125,7 +108,9 @@ class CordaSimul:
                  m: float = None,
                  h: float = None,
                  dist_minima: float = None,
-                 pontos: List[Particle] = None
+                 pontos: List[Particle] = None,
+                 barras: List[Bar] = None,
+                 n_relaxacoes=37
                  ):
         """
         Inicia um objeto de simulacao
@@ -147,20 +132,22 @@ class CordaSimul:
         self.h = h
         if dist_minima is not None:
             self.dist_minima = dist_minima
-            self.pontos, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h)
-        elif pontos is not None:
+            self.pontos, self.barras, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h)
+        elif pontos is not None and barras is not None:
             self.pontos = pontos
+            self.barras = barras
             self.dist_minima = None
         else:
             print("especifique dist_minima ou pontos")
             exit(0)
+        self.n_relaxacoes = n_relaxacoes
         return
 
     def proxima_avaliacao(self):
         delta = self.delta
         m = self.m
         h = self.h
-        # TODO: implementar relaxação
+        count = 0
         fg = np.array([0, -9.8])
         for i, p in enumerate(self.pontos):
             if p.is_fixed:
@@ -170,13 +157,13 @@ class CordaSimul:
             next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / m) * fg
             p.update_position(next_pos)
 
-        for i in range(len(self.pontos) - 2):
-            first = self.pontos[i]
-            second = self.pontos[i + 1]
-            third = self.pontos[i + 2]
-            relax(first, second, self.distancias[i])
-            relax(first, third, self.distancias[i] + self.distancias[i + 1])
-        relax(self.pontos[-2], self.pontos[-1], self.distancias[-1])
+        for i in range(len(self.barras)):
+            if count >= self.n_relaxacoes - 1:
+                print("max de relaxações atingido")
+                break
+            self.barras[i].relax()
+            count += 1
+
         return
 
     def get_pontos(self):
