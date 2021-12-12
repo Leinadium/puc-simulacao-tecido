@@ -11,11 +11,11 @@ def main_teste():
     tam_corda = 10
     v = Visualizacao(
         tam_corda=tam_corda,
-        fps=20.0
+        fps=30.0
     )
 
     s = CordaSimul(
-        tam_corda=1,
+        tam_corda=2,
         tempo_passo=1.0/60.0,
         delta=delta,
         m=m,
