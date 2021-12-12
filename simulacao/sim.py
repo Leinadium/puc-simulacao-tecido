@@ -62,14 +62,14 @@ class Particle:
 #     return barras
 
 
-def _gera_pontos_iniciais2(dist_minima: float, tam_corda: float, h: float) -> tuple[list[Particle], list[float]]:
+def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) -> tuple[list[Particle], list[float]]:
     particles: [Particle] = []
     distances: [float] = []
     v0 = np.array([1, -5])
 
     # Criando partículas
     for i in range(int(tam_corda / dist_minima)):
-        previous_pos = np.array([0 + 0.1 * i, tam_corda - dist_minima * i+10])
+        previous_pos = np.array([0.1 * i, 10 + tam_corda - dist_minima * i])
         particles.append(Particle(previous_pos, previous_pos))
     particles[0].is_fixed = True
 
@@ -79,6 +79,7 @@ def _gera_pontos_iniciais2(dist_minima: float, tam_corda: float, h: float) -> tu
         distances.append(calcula_dist(particles[i].get_current_pos(), particles[i + 1].get_current_pos()))
         current_pos = particles[i].previous_pos + h * v0
         particles[i].update_position(current_pos)
+
     # Dando passo inicial na última partícula
     current_pos = particles[-1].previous_pos + h * v0
     particles[-1].update_position(current_pos)
@@ -143,7 +144,7 @@ class CordaSimul:
         self.h = h
         if dist_minima is not None:
             self.dist_minima = dist_minima
-            self.pontos, self.distancias = _gera_pontos_iniciais2(dist_minima, tam_corda, self.h)
+            self.pontos, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h)
         elif pontos is not None:
             self.pontos = pontos
             self.dist_minima = None
