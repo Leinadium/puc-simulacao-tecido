@@ -70,7 +70,6 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
         for j in range(i + 2, max_lim):
             paux = pontos[j]
             aux_dist = calcula_dist(p1.get_current_pos(), paux.get_current_pos())
-            print(aux_dist)
             aux_bar = Bar(p1, paux, aux_dist)
             barras.append(aux_bar)
     last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
