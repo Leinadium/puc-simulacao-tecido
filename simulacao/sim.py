@@ -48,16 +48,18 @@ class Particle:
 #             p2.current_pos += adjust * (-direction)
 #
 #
-# def gera_barras(self):
+# def gera_barras(pontos: [Particle]) -> [Bar]:
 #     barras = []
-#     for i in range(len(self.pontos) - 2):
-#         dist_perto = 1
-#         dist_longe = 2
-#         barra_perto = Bar(self.pontos[i], self.pontos[i + 1], dist_perto)
-#         barra_longe = Bar(self.pontos[i], self.pontos[i + 2], dist_longe)
+#     for i in range(len(pontos) - 2):
+#         p1 = pontos[i]
+#         p2 = pontos[i+1]
+#         p3 = pontos[i+2]
+#         barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
+#         barra_longe = Bar(p1, p3, calcula_dist(p1.get_current_pos(), p3.get_current_pos()))
 #         barras.append(barra_perto)
 #         barras.append(barra_longe)
-#     ultima_barra = Bar(self.pontos[-2], self.pontos[-1], 1)
+#     last_dist = calcula_dist(pontos[-2].get_current_pos(), pontos[-1].get_current_pos())
+#     ultima_barra = Bar(pontos[-2], pontos[-1], last_dist)
 #     barras.append(ultima_barra)
 #     return barras
 
@@ -65,11 +67,11 @@ class Particle:
 def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float) -> tuple[list[Particle], list[float]]:
     particles: [Particle] = []
     distances: [float] = []
-    v0 = np.array([20, 20])
+    v0 = np.array([0, 0])
 
     # Criando partículas
     for i in range(int(tam_corda / dist_minima)):
-        previous_pos = np.array([0, 10+tam_corda - dist_minima * i])
+        previous_pos = np.array([dist_minima*i, 10+tam_corda - dist_minima * i])
         particles.append(Particle(previous_pos, previous_pos))
     particles[0].is_fixed = True
 
