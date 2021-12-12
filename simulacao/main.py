@@ -20,7 +20,8 @@ def main_teste():
         delta=delta,
         m=m,
         h=h,
-        dist_minima=dist_minima
+        dist_minima=dist_minima,
+        n_adjacencias_por_particula=6
     )
 
     while True:

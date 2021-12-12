@@ -57,7 +57,7 @@ class Bar:
 
 # Gera barras adjacentes e imaginárias (1 passo a mais além da adjacente)
 # entre partículas passadas em uma lista no parâmetro "pontos".
-def gera_barras(pontos: [Particle]) -> [Bar]:
+def gera_barras(pontos: [Particle], n_adj: int) -> [Bar]:
     barras = []
     for i in range(len(pontos) - 1):
         count = 0
@@ -68,7 +68,7 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
         barras.insert(0, barra_perto)
         count += 1
         # max_lim = len(pontos)
-        max_lim = min(len(pontos), i + 8)
+        max_lim = min(len(pontos), i + 1 + n_adj)
         # com max_lim = i+8, cada particula faz a barra adjacente
         # e no até 6 barras imaginárias = 7 barras no total (para particulas que tem
         # 7 partículas depois dela na corda, é claro)
@@ -83,7 +83,7 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
 
 # Gera partículas e barras a partir de um tamanho de corda, uma distância mínima entre partículas
 # e parâmetros h e lista de massas das partículas.
-def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [float]) \
+def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [float], n_adj: int) \
         -> tuple[list[Particle], list[Bar]]:
     particles: [Particle] = []
     distances: [float] = []
@@ -98,7 +98,7 @@ def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [fl
 
     # Gerando barras
     # e dando passo inicial
-    barras = gera_barras(particles)
+    barras = gera_barras(particles, n_adj)
     for i in range(len(particles) - 1):
         if not particles[i].is_fixed:
             current_pos = particles[i].previous_pos + h * v0
@@ -130,7 +130,7 @@ class CordaSimul:
                  dist_minima: float = None,
                  pontos: List[Particle] = None,
                  barras: List[Bar] = None,
-                 n_relaxacoes=1000000
+                 n_adjacencias_por_particula=7
                  ):
         """
         Inicia um objeto de simulacao
@@ -150,9 +150,10 @@ class CordaSimul:
         self.delta = delta
         self.m = m
         self.h = h
+        self.n_adjacencias = n_adjacencias_por_particula
         if dist_minima is not None:
             self.dist_minima = dist_minima
-            self.pontos, self.barras = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m)
+            self.pontos, self.barras = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m, self.n_adjacencias)
         elif pontos is not None and barras is not None:
             self.pontos = pontos
             self.barras = barras
@@ -160,9 +161,8 @@ class CordaSimul:
         else:
             print("especifique dist_minima ou pontos")
             exit(0)
-        print("LEN PONTOS:", len(self.pontos))
-        print("LEN BARRAS:", len(self.barras))
-        self.n_relaxacoes = n_relaxacoes
+        print("NUMERO DE PARTICULAS:", len(self.pontos))
+        print("NUMERO DE BARRAS (RELAXACOES POR ITERAÇÃO):", len(self.barras))
         return
 
     def proxima_avaliacao(self):
@@ -180,8 +180,6 @@ class CordaSimul:
             p.update_position(next_pos)
 
         for i in range(len(self.barras)):
-            if count >= self.n_relaxacoes:
-                break
             self.barras[i].relax()
             count += 1
 
