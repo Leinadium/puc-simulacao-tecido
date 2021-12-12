@@ -5,7 +5,7 @@ DEFAULT_FPS = 1.0 / 60.0
 
 
 # Gera uma instância de partícula. Guarda a posição anterior da partícula, posição atual e um booleano indicando
-# se a partícula está fixa ou não.
+# se a partícula está fixa ou não, além da massa da partícula.
 # Elementos de posição são do tipo numpy.array (facilita operações vetoriais).
 class Particle:
     previous_pos = np.array([])
@@ -19,6 +19,7 @@ class Particle:
         self.mass = mass
         self.is_fixed = is_fixed
 
+    # Atualiza posição atual da partícula e move posição atual (antiga) para ficar guardada na posição anterior.
     def update_position(self, new_position):
         self.previous_pos = self.current_pos
         self.current_pos = new_position
@@ -27,12 +28,16 @@ class Particle:
         return self.current_pos
 
 
+# A classe Bar representa uma barra conectando quaisquer duas partículas.
+# Serve para guardar a distância original entre elas e permitir o relaxamento
+# de suas posições na simulação.
 class Bar:
     def __init__(self, particle1: Particle, particle2: Particle, length: float):
         self.particle1 = particle1
         self.particle2 = particle2
         self.length = length
 
+    # Aplica o relaxamento das partículas conectadas pela barra.
     def relax(self):
         p1 = self.particle1
         p2 = self.particle2
@@ -50,16 +55,18 @@ class Bar:
             p2.current_pos += adjust * (-direction)
 
 
+# Gera barras adjacentes e imaginárias (1 passo a mais além da adjacente)
+# entre partículas passadas em uma lista no parâmetro "pontos".
 def gera_barras(pontos: [Particle]) -> [Bar]:
     barras = []
-    for i in range(len(pontos)-1):
+    for i in range(len(pontos) - 1):
         p1 = pontos[i]
         p2 = pontos[i + 1]
         barra_perto = Bar(p1, p2, calcula_dist(p1.get_current_pos(), p2.get_current_pos()))
         barras.insert(0, barra_perto)
-        #max_lim = len(pontos)
-        max_lim = min(len(pontos), i+4)
-        for j in range(i+2, max_lim):
+        # max_lim = len(pontos)
+        max_lim = min(len(pontos), i + 4)
+        for j in range(i + 2, max_lim):
             paux = pontos[j]
             aux_bar = Bar(p1, paux, calcula_dist(p1.get_current_pos(), paux.get_current_pos()))
             barras.append(aux_bar)
@@ -69,8 +76,10 @@ def gera_barras(pontos: [Particle]) -> [Bar]:
     return barras
 
 
+# Gera partículas e barras a partir de um tamanho de corda, uma distância mínima entre partículas
+# e parâmetros h e lista de massas das partículas.
 def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [float]) \
-        -> tuple[list[Particle], list[Bar], list[float]]:
+        -> tuple[list[Particle], list[Bar]]:
     particles: [Particle] = []
     distances: [float] = []
     barras: [Bar] = []
@@ -96,9 +105,10 @@ def _gera_pontos_iniciais(dist_minima: float, tam_corda: float, h: float, m: [fl
     for i in range(len(barras)):
         barras[i].relax()
 
-    return particles, barras, distances
+    return particles, barras
 
 
+# Calcula distância entre duas coordenadas x-y.
 def calcula_dist(point1, point2):
     diff = np.subtract(point1, point2)
     return np.linalg.norm(diff)
@@ -115,7 +125,7 @@ class CordaSimul:
                  dist_minima: float = None,
                  pontos: List[Particle] = None,
                  barras: List[Bar] = None,
-                 n_relaxacoes= 1000000
+                 n_relaxacoes=1000000
                  ):
         """
         Inicia um objeto de simulacao
@@ -137,7 +147,7 @@ class CordaSimul:
         self.h = h
         if dist_minima is not None:
             self.dist_minima = dist_minima
-            self.pontos, self.barras, self.distancias = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m)
+            self.pontos, self.barras = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m)
         elif pontos is not None and barras is not None:
             self.pontos = pontos
             self.barras = barras
@@ -178,6 +188,6 @@ class CordaSimul:
         converted_pontos = []
         for point in self.pontos:
             converted_position = point.get_current_pos().tolist()
-            #print(converted_position)
+            # print(converted_position)
             converted_pontos.append(converted_position)
         return converted_pontos
