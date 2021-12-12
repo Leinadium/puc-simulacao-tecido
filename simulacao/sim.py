@@ -161,7 +161,7 @@ class CordaSimul:
                 continue
             previous_pos = p.previous_pos
             current_pos = p.current_pos
-            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / m[i]) * fg
+            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / p.mass) * fg
             p.update_position(next_pos)
 
         for i in range(len(self.barras)):
