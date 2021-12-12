@@ -98,6 +98,9 @@ class CordaSimul:
                  tam_corda: float,
                  tempo_passo: float = DEFAULT_FPS,
                  vento: float = None,
+                 delta: float = None,
+                 m: float = None, 
+                 h: float = None,
                  dist_minima: float = None,
                  pontos: List[Particle] = None
                  ):
@@ -116,6 +119,9 @@ class CordaSimul:
         """
         self.tam_corda = tam_corda
         self.tempo_passo = tempo_passo
+        self.delta = delta
+        self.m = m
+        self.h = h
         if dist_minima is not None:
             self.dist_minima = dist_minima
             self.pontos = _gera_pontos_iniciais2(dist_minima, tam_corda)
@@ -128,11 +134,10 @@ class CordaSimul:
         return
 
     def proxima_avaliacao(self):
+        delta = self.delta
+        m = self.m
+        h = self.h
         # TODO: implementar relaxação
-        # TODO: passar delta, m e h como parâmetros talvez
-        delta = 0.02
-        m = 0.2
-        h = 0.05
         fg = np.array([0, -9.8])
         for i, p in enumerate(self.pontos):
             if p.is_fixed:

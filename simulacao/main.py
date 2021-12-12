@@ -1,8 +1,13 @@
 from view import Visualizacao
 from sim import CordaSimul
 
-
 def main_teste():
+
+    delta = 0.02
+    m = 0.2
+    h = 0.05
+
+
     tam_corda = 10
     v = Visualizacao(
         tam_corda=tam_corda,
@@ -12,6 +17,9 @@ def main_teste():
     s = CordaSimul(
         tam_corda=1,
         tempo_passo=1.0/60.0,
+        delta=delta,
+        m=m,
+        h=h,
         dist_minima=0.1
     )
 
