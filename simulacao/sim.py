@@ -153,7 +153,7 @@ class CordaSimul:
         if dist_minima is not None:
             self.dist_minima = dist_minima
             self.pontos, self.barras = _gera_pontos_iniciais(dist_minima, tam_corda, self.h, self.m, self.n_adjacencias)
-        elif pontos is not None and barras is not None:
+        elif pontos is not None:
             self.pontos = pontos
             self.barras = gera_barras(self.pontos, n_adjacencias_por_particula)
             self.dist_minima = None
@@ -166,16 +166,16 @@ class CordaSimul:
 
     def proxima_avaliacao(self):
         delta = self.delta
-        m = self.m
-        h = self.h
+        # m = self.m
+        # h = self.h
         count = 0
         fg = np.array([0, -9.8])
         for i, p in enumerate(self.pontos):
             if p.is_fixed:
                 continue
             previous_pos = p.previous_pos
-            current_pos = p.current_pos
-            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((h * h) / p.mass) * fg
+            # current_pos = p.current_pos
+            next_pos = p.current_pos + (1 - delta) * (p.current_pos - previous_pos) + ((self.tempo_passo ** 2) / p.mass) * fg
             p.update_position(next_pos)
 
         for i in range(len(self.barras)):

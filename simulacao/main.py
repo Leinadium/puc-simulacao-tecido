@@ -8,15 +8,16 @@ def main_teste():
     dist_minima = 0.1
     m = [0.2 for i in range(int(tam_corda / dist_minima))]
     h = 0.05
+    fps = 60
 
     v = Visualizacao(
         tam_corda=15,
-        fps=30.0
+        fps=fps
     )
 
     s = CordaSimul(
         tam_corda=tam_corda,
-        tempo_passo=1.0 / 60.0,
+        tempo_passo=1 / fps,
         delta=delta,
         m=m,
         h=h,
