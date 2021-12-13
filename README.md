@@ -32,3 +32,6 @@ Após ativar o ambiente virtual, instale as bibliotecas necessárias para o proj
 pip3 install -r requirements.txt    # linux
 python install -r requirements.txt  # windows
 ```
+
+Para executar o programa, execute o script ```simulacao/main.py```
+
